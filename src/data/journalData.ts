@@ -383,3 +383,4 @@ export const DAYS_JOURNAL: DayJournal[] = [
     ],
   },
 ];
+

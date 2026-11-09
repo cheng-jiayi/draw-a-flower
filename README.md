@@ -69,3 +69,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 2. In [Vercel](https://vercel.com), click **Add New Project** and select this repository.
 3. Framework Preset: **Next.js** (detected automatically).
 4. Click **Deploy**!
+

@@ -346,3 +346,4 @@ export function extractFlowerArtwork(canvas: HTMLCanvasElement): string | null {
   trimCtx.drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
   return trimCanvas.toDataURL('image/png');
 }
+

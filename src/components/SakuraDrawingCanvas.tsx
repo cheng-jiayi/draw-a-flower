@@ -439,3 +439,4 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
     </div>
   );
 };
+

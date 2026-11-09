@@ -67,11 +67,10 @@ export const WindchimeLanding: React.FC<WindchimeLandingProps> = ({ onEnter }) =
 
           {/* The Windchime Image with physics swaying animation */}
           <div
-            className={`relative h-[82vh] w-[61vh] max-w-[92vw] max-h-[920px] transition-transform ${
-              isSwaying
+            className={`relative -mt-16 h-[105vh] w-[78vh] max-w-[110vw] max-h-none transition-transform ${isSwaying
                 ? 'animate-swayIntense'
                 : 'animate-sway group-hover:scale-[1.01]'
-            }`}
+              }`}
             style={{ transformOrigin: 'top center' }}
           >
             <Image
