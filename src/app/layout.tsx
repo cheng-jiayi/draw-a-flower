@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Draw a Flower · Whisper of the Heart (風鈴と桜)',
+  title: 'Draw a Flower',
   description:
     'A poetic journey through 9 days in Japan with Japanese wagashi, tea, windchimes, and AI-validated hand-drawn cherry blossoms floating in the wind.',
   icons: {
