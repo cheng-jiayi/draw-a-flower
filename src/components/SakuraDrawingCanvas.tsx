@@ -196,9 +196,10 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-stone-100 flex flex-col items-center justify-center p-4 md:p-8 pt-20 pb-20 md:py-8 select-none overflow-x-hidden">
+    <div className="relative w-full min-h-screen bg-stone-100 flex flex-col items-center justify-center p-4 md:p-8 select-none overflow-x-hidden">
       {/* Background craft paper texture */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0">
+        <div className="fixed inset-0 z-0 pointer-events-none"></div>
         <Image
           src="/assets/craft-paper.png"
           alt="Craft Paper Background"
