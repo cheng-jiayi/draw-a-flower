@@ -44,12 +44,10 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
 
   // Preload custom flower images and petal asset
   useEffect(() => {
-    // Load petal asset
     const petal = new window.Image();
     petal.src = '/assets/sakura-petal.png';
     petalImgRef.current = petal;
 
-    // Load custom flower images
     const loadedImgs: HTMLImageElement[] = [];
     flowerImages.forEach((src) => {
       const img = new window.Image();
@@ -59,17 +57,6 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
     customImgRefs.current = loadedImgs;
     setFlowerCount(flowerImages.length);
   }, [flowerImages]);
-
-  // Periodic chime in the wind
-  useEffect(() => {
-    const chimeInterval = setInterval(() => {
-      if (Math.random() > 0.4) {
-        sounds.playFurinChime(0.4 + Math.random() * 0.4);
-      }
-    }, 7000);
-
-    return () => clearInterval(chimeInterval);
-  }, []);
 
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
@@ -118,7 +105,6 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Animation Loop
     let lastTime = performance.now();
 
     const loop = (time: number) => {
@@ -131,7 +117,6 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
         windIntensity === 'calm' ? 0.6 : windIntensity === 'gust' ? 2.2 : 1.2;
 
       particlesRef.current.forEach((p) => {
-        // Physics update
         p.tilt += p.tiltSpeed;
         p.angle += p.angleSpeed;
         p.wobblePhase += dt * 2.0;
@@ -140,17 +125,14 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
         p.x += (p.vx * windMult + wobbleX);
         p.y += p.vy * (windIntensity === 'calm' ? 0.7 : 1.0);
 
-        // Reset if offscreen
         if (p.y > canvas.height + 60 || p.x > canvas.width + 60) {
           p.y = -60 - Math.random() * 100;
           p.x = Math.random() * (canvas.width * 1.1) - canvas.width * 0.2;
         }
 
-        // Render particle
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
-        // Tumbling in 3D: scale along one axis simulates rotation towards viewer
         const scaleX = Math.cos(p.tilt);
         ctx.scale(scaleX, 1);
         ctx.globalAlpha = p.opacity;
@@ -160,7 +142,6 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
           const h = p.baseSize * (p.image.naturalHeight / p.image.naturalWidth);
           ctx.drawImage(p.image, -w / 2, -h / 2, w, h);
         } else {
-          // Fallback petal
           ctx.fillStyle = '#ffccd8';
           ctx.beginPath();
           ctx.ellipse(0, 0, p.baseSize * 0.4, p.baseSize * 0.25, 0, 0, Math.PI * 2);
@@ -204,71 +185,6 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
     });
   };
 
-  // Download Keepsake Postcard
-  const handleDownloadKeepsake = () => {
-    sounds.playFurinChime(0.8);
-    const canvas = document.createElement('canvas');
-    canvas.width = 1200;
-    canvas.height = 800;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Background gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, 800);
-    grad.addColorStop(0, '#eaf4fc');
-    grad.addColorStop(1, '#fdeef2');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1200, 800);
-
-    // Border
-    ctx.strokeStyle = '#c48f9e';
-    ctx.lineWidth = 12;
-    ctx.strokeRect(30, 30, 1140, 740);
-    ctx.lineWidth = 2;
-    ctx.strokeRect(45, 45, 1110, 710);
-
-    // Calligraphy Titles
-    ctx.font = 'bold 38px "Playfair Display", Georgia, serif';
-    ctx.fillStyle = '#6b3749';
-    ctx.textAlign = 'center';
-    ctx.fillText('Whisper of the Heart · 心のささやき', 600, 110);
-
-    ctx.font = 'italic 20px "Playfair Display", Georgia, serif';
-    ctx.fillStyle = '#8f6874';
-    ctx.fillText('Handcrafted Cherry Blossom Keepsake', 600, 145);
-
-    // Draw the latest flower in center
-    const latestImg = customImgRefs.current[customImgRefs.current.length - 1];
-    if (latestImg && latestImg.complete) {
-      const size = 320;
-      ctx.drawImage(latestImg, 600 - size / 2, 220, size, size);
-    }
-
-    // Japanese Hanko Stamp (Red Seal)
-    ctx.fillStyle = '#b91c1c';
-    ctx.fillRect(1030, 630, 70, 70);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(1034, 634, 62, 62);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px "Yu Mincho", serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('桜', 1065, 660);
-    ctx.fillText('華', 1065, 686);
-
-    // Poetic Haiku
-    ctx.font = 'italic 18px "Playfair Display", serif';
-    ctx.fillStyle = '#615558';
-    ctx.textAlign = 'center';
-    ctx.fillText('“Petals drifting in the spring air, carrying silent wishes to the sky.”', 600, 680);
-
-    // Trigger download
-    const link = document.createElement('a');
-    link.download = 'sakura-blossom-keepsake.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  };
-
   return (
     <div
       onClick={handleStirWind}
@@ -277,7 +193,7 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
       {/* Background Watercolor Sky */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/assets/background-long.png"
+          src="/assets/background-3.png"
           alt="Watercolor Sky Landscape"
           fill
           priority
@@ -292,65 +208,52 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
         className="absolute inset-0 z-10 pointer-events-none"
       />
 
-      {/* Top Floating Controls */}
-      <div className="relative z-30 flex items-center justify-between p-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBackToTeaRoom();
-            }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 hover:bg-white backdrop-blur-sm border border-stone-200 shadow-xs text-xs font-serif text-stone-700 transition-all hover:scale-105 active:scale-95"
-          >
-            <span>← Tea &amp; Wagashi Table</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBackToLanding();
-            }}
-            className="px-3 py-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm border border-stone-200 shadow-xs text-xs font-serif text-stone-600 transition-all"
-          >
-            🎐 Windchime
-          </button>
-        </div>
-
-        {/* Center Title Badge */}
-        <div className="text-center bg-white/70 backdrop-blur-sm px-5 py-2 rounded-full border border-pink-100/80 shadow-xs">
-          <h1 className="text-sm md:text-base font-serif text-pink-900 font-medium">
-            Cherry Blossoms in the Breeze · 桜吹雪
-          </h1>
-          <p className="text-[10px] font-serif text-stone-500 italic">
-            Click or drag to stir the wind · {flowerCount} hand-drawn blossom{flowerCount > 1 ? 's' : ''} in the sky
-          </p>
-        </div>
-
-        {/* Wind Speed Controls */}
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 bg-white/80 backdrop-blur-sm p-1 rounded-full border border-stone-200 shadow-xs text-xs font-serif"
+      {/* Top Left: Back to Wagashi & Tea */}
+      <div className="fixed top-5 left-5 z-50 flex items-center gap-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onBackToTeaRoom();
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm border border-stone-200/80 shadow-sm text-stone-700 hover:text-stone-950 text-xs font-serif transition-all hover:scale-105 active:scale-95"
         >
-          <span className="px-2 text-[10px] text-stone-400">Wind:</span>
-          {(['calm', 'breeze', 'gust'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => {
-                sounds.playSoftClick();
-                setWindIntensity(mode);
-              }}
-              className={`px-3 py-1 rounded-full capitalize text-xs transition-all ${
-                windIntensity === mode
-                  ? 'bg-pink-600 text-white font-medium shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
+          <span>🍵 Wagashi &amp; Tea</span>
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onBackToLanding();
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm border border-stone-200/80 shadow-sm text-stone-600 hover:text-stone-900 text-xs font-serif transition-all hover:scale-105 active:scale-95"
+        >
+          <span>🎐 Windchime Veranda</span>
+        </button>
       </div>
 
-      {/* Center Interactive Hint (fades out) */}
+      {/* Top Right: Wind Speed Controls */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="fixed top-5 right-5 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm p-1 rounded-full border border-stone-200/80 shadow-sm text-xs font-serif"
+      >
+        <span className="px-2 text-[10px] text-stone-400">Wind:</span>
+        {(['calm', 'breeze', 'gust'] as const).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => {
+              sounds.playSoftClick();
+              setWindIntensity(mode);
+            }}
+            className={`px-3 py-1 rounded-full capitalize text-xs transition-all ${windIntensity === mode
+              ? 'bg-pink-600 text-white font-medium shadow-xs'
+              : 'text-stone-600 hover:text-stone-900'
+              }`}
+          >
+            {mode}
+          </button>
+        ))}
+      </div>
+
+      {/* Center Interactive Hint */}
       <div className="relative z-20 pointer-events-none text-center my-auto opacity-70">
         <p className="font-serif text-xs md:text-sm text-stone-600 tracking-widest drop-shadow-sm">
           Tap anywhere to stir the spring wind and scatter the petals
@@ -368,15 +271,7 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
         >
           <span>🌸 Draw Another Flower</span>
         </button>
-
-        <button
-          onClick={handleDownloadKeepsake}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-stone-700 text-xs md:text-sm font-serif border border-stone-300/80 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-        >
-          <span>📥 Save Keepsake Card</span>
-        </button>
       </div>
     </div>
   );
 };
-

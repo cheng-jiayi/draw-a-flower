@@ -12,9 +12,7 @@ interface PolaroidJournalProps {
   onGoToDrawing: () => void; // kept for interface compatibility
 }
 
-const GAP = 16; // px gap between cards
-// Fixed slight rotation per photo index — stays consistent as the photo moves through slots
-const ROTATIONS = [-2, 1.5, -1.2, 2, -1.8, 1, -2.5, 1.8, -0.8];
+const GAP = 20; // px gap between cards
 
 export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
   initialDay,
@@ -33,7 +31,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
 
   // Measure the clipping window to derive card width responsively
   const windowRef = useRef<HTMLDivElement>(null);
-  const [cardW, setCardW] = useState(220);
+  const [cardW, setCardW] = useState(320);
   const unit = cardW + GAP;
 
   useEffect(() => {
@@ -64,7 +62,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
   const goDir = useCallback(
     (dir: 1 | -1) => {
       if (animating || total <= 1) return;
-      sounds.playWindWhisper(0.4);
+      sounds.playPaperRustle(0.9);
       setAnimating(true);
       setWithTransition(true);
       setSlideOffset(-dir * unit); // dir 1 → slide left; dir -1 → slide right
@@ -117,35 +115,24 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
         </div>
       </div>
 
-      {/* Top Right: Back Button */}
-      <div className="absolute top-6 right-6 md:top-8 md:right-10 z-30">
+      {/* Top Left: Back to Wagashi & Tea */}
+      <div className="fixed top-5 left-5 z-50">
         <button
           onClick={() => { sounds.playSoftClick(); onBackToTeaRoom(); }}
-          className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center cursor-pointer outline-none focus:outline-none transition-transform hover:scale-110 active:scale-95"
-          title="Return to Tea Table"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm border border-stone-200/80 shadow-sm text-stone-700 hover:text-stone-950 text-xs font-serif transition-all hover:scale-105 active:scale-95"
         >
-          <div className="relative w-full h-full">
-            <Image
-              src="/assets/round.png"
-              alt="Back"
-              fill
-              className="object-contain drop-shadow-sm opacity-90 group-hover:opacity-100"
-            />
-          </div>
-          <span className="absolute inset-0 flex items-center justify-center text-rose-800 text-xs font-serif font-semibold opacity-70 group-hover:opacity-100 transition-opacity">
-            ✕
-          </span>
+          <span>🍵 Wagashi &amp; Tea</span>
         </button>
       </div>
 
       {/* Carousel row: left petal | clip window | right petal */}
-      <div className="relative z-10 flex items-center gap-2 md:gap-4 mt-14 md:mt-16 w-full max-w-4xl px-4 justify-center">
+      <div className="relative z-10 flex items-center gap-3 md:gap-6 mt-8 md:mt-12 w-full max-w-6xl px-3 md:px-8 justify-center">
 
         {/* Left petal */}
         <button
           onClick={() => goDir(-1)}
           disabled={total <= 1}
-          className="group relative w-10 h-14 md:w-14 md:h-20 flex-shrink-0 outline-none focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default cursor-pointer"
+          className="group relative w-12 h-16 md:w-16 md:h-24 flex-shrink-0 outline-none focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default cursor-pointer"
           title="Previous"
         >
           <div className="relative w-full h-full -rotate-90 group-hover:-translate-x-0.5 transition-transform duration-200">
@@ -157,7 +144,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
         <div
           ref={windowRef}
           className="overflow-hidden flex-1"
-          style={{ maxWidth: `${3 * 240 + 2 * GAP}px` }}
+          style={{ maxWidth: `${3 * 340 + 2 * GAP}px` }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -177,7 +164,6 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
             {slots.map(({ photoIdx, slotPos }) => {
               const photo = photos[photoIdx];
               const isCenter = slotPos === 2;
-              const rotation = ROTATIONS[photoIdx % ROTATIONS.length];
 
               return (
                 <div
@@ -185,7 +171,6 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
                   style={{
                     width: `${cardW}px`,
                     flexShrink: 0,
-                    transform: `rotate(${rotation}deg)`,
                   }}
                   className="cursor-pointer"
                   onClick={() => {
@@ -195,7 +180,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
                     else goDir(1);
                   }}
                 >
-                  <div className="bg-white p-3 pb-12 md:pb-14 rounded-xs shadow-lg border border-stone-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="bg-white p-3.5 pb-9 md:pb-11 rounded-xs shadow-xl border border-stone-100 hover:shadow-2xl transition-shadow duration-300">
                     <div className="relative w-full aspect-[4/5] bg-stone-100 overflow-hidden rounded-xs">
                       <Image
                         src={photo.imageUrl}
@@ -205,15 +190,10 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
                         className="object-cover object-center"
                       />
                     </div>
-                    <div className="mt-2 px-1">
-                      <p className="font-serif text-sm text-stone-800 tracking-wide font-medium leading-snug truncate">
+                    <div className="mt-3.5 px-1 text-center">
+                      <p className="font-serif text-sm md:text-base text-stone-800 tracking-wide font-medium leading-snug truncate">
                         {photo.title}
                       </p>
-                      {isCenter && photo.caption && (
-                        <p className="text-[10px] font-serif text-stone-500 italic mt-0.5 leading-relaxed line-clamp-2">
-                          {photo.caption}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -226,7 +206,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
         <button
           onClick={() => goDir(1)}
           disabled={total <= 1}
-          className="group relative w-10 h-14 md:w-14 md:h-20 flex-shrink-0 outline-none focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default cursor-pointer"
+          className="group relative w-12 h-16 md:w-16 md:h-24 flex-shrink-0 outline-none focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-20 disabled:cursor-default cursor-pointer"
           title="Next"
         >
           <div className="relative w-full h-full rotate-90 group-hover:translate-x-0.5 transition-transform duration-200">
@@ -243,18 +223,17 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
               key={i}
               onClick={() => {
                 if (animating) return;
-                sounds.playSoftClick();
+                sounds.playPaperRustle(0.7);
                 // Animate toward target by stepping one at a time feels odd;
                 // just snap directly for dot clicks
                 setWithTransition(false);
                 setSlideOffset(0);
                 setCenterIndex(i);
               }}
-              className={`rounded-full transition-all duration-200 ${
-                i === centerIndex
+              className={`rounded-full transition-all duration-200 ${i === centerIndex
                   ? 'w-4 h-2 bg-pink-500'
                   : 'w-2 h-2 bg-stone-300 hover:bg-pink-300'
-              }`}
+                }`}
             />
           ))}
         </div>

@@ -2,8 +2,12 @@ import { FlowerAnalysisResult } from '../types';
 
 /**
  * AI/ML Flower Detection Engine
- * Combines Computer Vision contour analysis, polar harmonic Fourier transforms (petal count & symmetry),
- * and a doodle feature classifier to verify hand-drawn flowers.
+ * 
+ * Analyzes hand-drawn canvas drawings using:
+ * 1. 360° Polar Angular Coverage & Continuity (rejects one-sided scribbles, lines, crosses)
+ * 2. Radial Undulation & Valley Depth Analysis (detects concave indentations between petal tips; rejects circles, ovals, solid blobs)
+ * 3. Harmonic Fourier Decomposition (verifies rotational symmetry for k = 4, 5, 6, 7, 8 petals)
+ * 4. Aspect Ratio & Centroid Balance
  */
 export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -29,7 +33,7 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  // 1. Gather all non-transparent, non-white drawn pixels
+  // 1. Collect non-transparent drawn pixels (step 2 for performance)
   const drawnPoints: { x: number; y: number }[] = [];
   let minX = width;
   let maxX = 0;
@@ -40,7 +44,6 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
     for (let x = 0; x < width; x += 2) {
       const idx = (y * width + x) * 4;
       const alpha = data[idx + 3];
-      // Check if pixel has opacity and isn't pure background
       if (alpha > 30) {
         drawnPoints.push({ x, y });
         if (x < minX) minX = x;
@@ -52,15 +55,15 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   }
 
   // Not enough strokes
-  if (drawnPoints.length < 120) {
+  if (drawnPoints.length < 150) {
     return {
       isFlower: false,
-      confidence: 0.1,
+      confidence: 0.05,
       petalCount: 0,
       symmetryScore: 0,
       circularityScore: 0,
       message: 'A budding sketch awaits... Please draw petals to form your flower.',
-      tips: ['Try sketching 5 rounded petals radiating from a central point.'],
+      tips: ['Draw 5 rounded petals radiating outwards from a central point.'],
       metrics: {
         radialSymmetry: 0,
         petalProminence: 0,
@@ -75,27 +78,27 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   const boxHeight = maxY - minY;
   const aspectRatio = boxWidth / Math.max(1, boxHeight);
 
-  // Severe aspect ratio skew indicates a line or banner, not a flower
-  if (aspectRatio > 2.4 || aspectRatio < 0.42) {
+  // Flowers must be roughly circular in overall envelope (0.60 to 1.65)
+  if (aspectRatio > 1.7 || aspectRatio < 0.58) {
     return {
       isFlower: false,
-      confidence: 0.18,
+      confidence: 0.15,
       petalCount: 0,
       symmetryScore: 0.1,
       circularityScore: 0.1,
-      message: 'The drawing is elongated like a stem or stripe. A flower blooms radially in a circle.',
-      tips: ['Draw petals around the center in a balanced, round blossom shape.'],
+      message: 'The drawing is elongated or skewed. Flowers have balanced, rounded petal arrangements.',
+      tips: ['Draw petals evenly all around the center point in a balanced circle.'],
       metrics: {
         radialSymmetry: 0.1,
         petalProminence: 0,
         closedLoops: 0,
-        aspectRatio,
+        aspectRatio: Number(aspectRatio.toFixed(2)),
         fillRatio: 0.1,
       },
     };
   }
 
-  // 2. Compute Center of Mass (Centroid)
+  // 2. Centroid calculation
   let sumX = 0;
   let sumY = 0;
   for (const p of drawnPoints) {
@@ -105,8 +108,8 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   const centerX = sumX / drawnPoints.length;
   const centerY = sumY / drawnPoints.length;
 
-  // 3. Polar Profile: Calculate radius r for each angular sector
-  const numSectors = 72; // 5 degrees per sector
+  // 3. Polar profile across 72 sectors (5° each)
+  const numSectors = 72;
   const sectorMaxRadius = new Float32Array(numSectors);
   const sectorCounts = new Int32Array(numSectors);
 
@@ -124,7 +127,49 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
     sectorCounts[sector]++;
   }
 
-  // Fill empty sectors by interpolation
+  // 4. Angular Coverage & Gap Analysis
+  // Genuine flowers must bloom in nearly all directions around the center
+  let filledSectors = 0;
+  let maxConsecutiveEmpty = 0;
+  let currentEmpty = 0;
+
+  // Double loop to catch wrap-around gap across sector 0
+  for (let i = 0; i < numSectors * 2; i++) {
+    const idx = i % numSectors;
+    if (sectorCounts[idx] > 0) {
+      if (i < numSectors) filledSectors++;
+      if (currentEmpty > maxConsecutiveEmpty) {
+        maxConsecutiveEmpty = currentEmpty;
+      }
+      currentEmpty = 0;
+    } else {
+      currentEmpty++;
+    }
+  }
+
+  const angularCoverage = filledSectors / numSectors;
+
+  // Reject if petals are missing on one side (e.g. half a flower, letters, an "L" or smiley face)
+  if (angularCoverage < 0.65 || maxConsecutiveEmpty > 12) { // 12 sectors = 60° continuous empty gap
+    return {
+      isFlower: false,
+      confidence: 0.22,
+      petalCount: 0,
+      symmetryScore: 0.15,
+      circularityScore: Number(angularCoverage.toFixed(2)),
+      message: 'The drawing only covers part of the center. Draw petals radiating all the way around! 🌸',
+      tips: ['Complete the circle by adding petals on all sides.'],
+      metrics: {
+        radialSymmetry: 0.15,
+        petalProminence: 0,
+        closedLoops: 0,
+        aspectRatio: Number(aspectRatio.toFixed(2)),
+        fillRatio: Number(angularCoverage.toFixed(2)),
+      },
+    };
+  }
+
+  // Interpolate small gaps for radial profile smoothing
   for (let i = 0; i < numSectors; i++) {
     if (sectorMaxRadius[i] === 0) {
       const prev = sectorMaxRadius[(i - 1 + numSectors) % numSectors];
@@ -133,7 +178,7 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
     }
   }
 
-  // Smooth the radial curve with gaussian window
+  // Gaussian smooth the radial contour
   const smoothedRadius = new Float32Array(numSectors);
   for (let i = 0; i < numSectors; i++) {
     const p2 = sectorMaxRadius[(i - 2 + numSectors) % numSectors];
@@ -144,18 +189,97 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
     smoothedRadius[i] = p2 * 0.06 + p1 * 0.24 + c * 0.4 + n1 * 0.24 + n2 * 0.06;
   }
 
-  // 4. Harmonic Fourier Analysis for Petal Detection
-  // We evaluate power spectrum for k = 3, 4, 5, 6, 7, 8 petals
-  let bestK = 5;
-  let maxHarmonicPower = 0;
-  const harmonicPowers: { [k: number]: number } = {};
-
   let meanRadius = 0;
   for (let i = 0; i < numSectors; i++) {
     meanRadius += smoothedRadius[i];
   }
   meanRadius /= numSectors;
 
+  // 5. Detect Real Petal Peaks & Deep Valleys
+  // A true flower has prominent peaks (petal tips) separated by valleys (indentations)
+  interface LobePeak {
+    index: number;
+    peakRadius: number;
+    valleyDepth: number;
+  }
+
+  const detectedPeaks: LobePeak[] = [];
+  const valleyLookahead = 6; // Look ~30 degrees in each direction
+
+  for (let i = 0; i < numSectors; i++) {
+    const curr = smoothedRadius[i];
+    const prev = smoothedRadius[(i - 1 + numSectors) % numSectors];
+    const next = smoothedRadius[(i + 1) % numSectors];
+
+    // Local peak that is reasonably prominent
+    if (curr > prev && curr > next && curr >= meanRadius * 0.85) {
+      // Find lowest valley to the left and right within lookahead window
+      let leftMin = curr;
+      for (let s = 1; s <= valleyLookahead; s++) {
+        const val = smoothedRadius[(i - s + numSectors) % numSectors];
+        if (val < leftMin) leftMin = val;
+      }
+
+      let rightMin = curr;
+      for (let s = 1; s <= valleyLookahead; s++) {
+        const val = smoothedRadius[(i + s) % numSectors];
+        if (val < rightMin) rightMin = val;
+      }
+
+      const valleyDropLeft = (curr - leftMin) / Math.max(1, curr);
+      const valleyDropRight = (curr - rightMin) / Math.max(1, curr);
+      const averageDrop = (valleyDropLeft + valleyDropRight) / 2;
+
+      // Only count if there is a distinct indentation on both sides (> 14% drop)
+      if (valleyDropLeft > 0.12 && valleyDropRight > 0.12 && averageDrop >= 0.15) {
+        detectedPeaks.push({
+          index: i,
+          peakRadius: curr,
+          valleyDepth: averageDrop,
+        });
+      }
+    }
+  }
+
+  // Merge peaks that are too close together (< 25 degrees apart)
+  const filteredPeaks: LobePeak[] = [];
+  for (let i = 0; i < detectedPeaks.length; i++) {
+    const p = detectedPeaks[i];
+    if (filteredPeaks.length === 0) {
+      filteredPeaks.push(p);
+    } else {
+      const last = filteredPeaks[filteredPeaks.length - 1];
+      const dist = p.index - last.index;
+      if (dist < 5) { // within 25 degrees
+        // Keep the one with higher peak radius
+        if (p.peakRadius > last.peakRadius) {
+          filteredPeaks[filteredPeaks.length - 1] = p;
+        }
+      } else {
+        filteredPeaks.push(p);
+      }
+    }
+  }
+
+  // Check wrap-around distance between first and last peak
+  if (filteredPeaks.length > 1) {
+    const first = filteredPeaks[0];
+    const last = filteredPeaks[filteredPeaks.length - 1];
+    if (numSectors - last.index + first.index < 5) {
+      if (first.peakRadius < last.peakRadius) {
+        filteredPeaks.shift();
+      } else {
+        filteredPeaks.pop();
+      }
+    }
+  }
+
+  const peakCount = filteredPeaks.length;
+  const avgValleyDepth = filteredPeaks.length > 0
+    ? filteredPeaks.reduce((sum, p) => sum + p.valleyDepth, 0) / filteredPeaks.length
+    : 0;
+
+  // 6. Fourier Harmonic Analysis
   // Calculate variance of radius
   let variance = 0;
   for (let i = 0; i < numSectors; i++) {
@@ -164,9 +288,11 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   }
   variance /= numSectors;
   const stdDev = Math.sqrt(variance);
-  const radialFluctuation = stdDev / Math.max(1, meanRadius);
 
-  // Calculate Fourier coefficients for petal harmonics
+  let bestK = 5;
+  let maxHarmonicPower = 0;
+  const harmonicPowers: { [k: number]: number } = {};
+
   for (let k = 3; k <= 8; k++) {
     let re = 0;
     let im = 0;
@@ -184,18 +310,7 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
     }
   }
 
-  // Count local peaks in smoothed radius to confirm petal lobes
-  let peakCount = 0;
-  for (let i = 0; i < numSectors; i++) {
-    const prev = smoothedRadius[(i - 1 + numSectors) % numSectors];
-    const curr = smoothedRadius[i];
-    const next = smoothedRadius[(i + 1) % numSectors];
-    if (curr > prev && curr > next && curr > meanRadius * 0.9) {
-      peakCount++;
-    }
-  }
-
-  // 5. Radial Symmetry Assessment
+  // 7. Radial Symmetry Assessment based on best harmonic
   let symmetrySum = 0;
   const kSectors = Math.round(numSectors / bestK);
   for (let i = 0; i < numSectors; i++) {
@@ -206,78 +321,79 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
   }
   const radialSymmetry = symmetrySum / numSectors;
 
-  // 6. Central Density vs Outer Perimeter (Flowers have a center hub with petals around)
-  let innerPoints = 0;
-  let outerPoints = 0;
-  const innerRadius = meanRadius * 0.35;
-
-  for (const p of drawnPoints) {
-    const dx = p.x - centerX;
-    const dy = p.y - centerY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < innerRadius) {
-      innerPoints++;
-    } else {
-      outerPoints++;
-    }
-  }
-
-  const centerRatio = innerPoints / Math.max(1, drawnPoints.length);
-  // Flowers typically have 5% to 45% inner stamen/hub points
-
-  // 7. Overall Scoring Calculation
-  // Scoring weights:
-  // - Petal harmonic power: 30%
-  // - Radial symmetry: 25%
-  // - Radial fluctuation (lobes): 20%
-  // - Aspect ratio balance: 15%
-  // - Petal count reasonableness (4-8): 10%
-
-  const harmonicScore = Math.min(1, maxHarmonicPower / 0.55);
-  const lobeScore = Math.min(1, radialFluctuation / 0.18);
-  const aspectScore = 1 - Math.min(1, Math.abs(aspectRatio - 1.0) / 0.7);
-  const validPetalCount = peakCount >= 4 && peakCount <= 9;
-  const petalBonus = validPetalCount ? 0.15 : (peakCount === 3 || peakCount === 10 ? 0.05 : -0.1);
+  // 8. Composite Scoring
+  const aspectScore = 1 - Math.min(1, Math.abs(aspectRatio - 1.0) / 0.5);
+  const harmonicScore = Math.min(1, maxHarmonicPower / 0.6);
+  const valleyScore = Math.min(1, avgValleyDepth / 0.28);
+  const coverageScore = Math.min(1, angularCoverage / 0.85);
 
   let confidence = (
-    harmonicScore * 0.32 +
-    radialSymmetry * 0.28 +
-    lobeScore * 0.22 +
-    aspectScore * 0.18 +
-    petalBonus
+    harmonicScore * 0.30 +
+    valleyScore * 0.30 +
+    radialSymmetry * 0.20 +
+    coverageScore * 0.10 +
+    aspectScore * 0.10
   );
 
-  // If drawn is an almost pure circle without petals (like a sun or coin)
-  if (radialFluctuation < 0.07) {
-    confidence *= 0.65;
+  // Sakura Bonus: exactly 5 distinct petals
+  if (peakCount === 5 || (peakCount >= 4 && peakCount <= 6 && bestK === 5)) {
+    confidence = Math.min(0.99, confidence + 0.10);
   }
 
-  // Ensure confidence is clamped
-  confidence = Math.max(0.05, Math.min(0.99, confidence));
+  // Penalize if no clear petal indentations (solid circle / smooth oval / face / coin)
+  if (avgValleyDepth < 0.14) {
+    confidence *= 0.45;
+  }
 
-  const isFlower = confidence >= 0.52 && (peakCount >= 4 || bestK >= 4);
+  // Penalize if too few or too many peaks
+  if (peakCount < 4 || peakCount > 8) {
+    confidence *= 0.55;
+  }
 
+  confidence = Math.max(0.05, Math.min(0.98, confidence));
+
+  // STRICT Pass Gating:
+  // Must satisfy:
+  // - Petal count between 4 and 8
+  // - Minimum valley depth >= 0.15 (clear indentations between petals)
+  // - Adequate angular coverage >= 70%
+  // - Overall confidence >= 0.65
+  const isFlower = (
+    confidence >= 0.65 &&
+    peakCount >= 4 &&
+    peakCount <= 8 &&
+    avgValleyDepth >= 0.15 &&
+    angularCoverage >= 0.70 &&
+    aspectRatio >= 0.65 &&
+    aspectRatio <= 1.55
+  );
+
+  // Construct helpful, specific feedback messages
   let message = '';
   if (isFlower) {
-    if (bestK === 5 || peakCount === 5) {
+    if (peakCount === 5 || bestK === 5) {
       message = `Lovely Sakura Blossom detected with 5 delicate petals (${Math.round(confidence * 100)}% floral harmony) 🌸`;
     } else {
-      message = `Gentle flower detected with ${peakCount || bestK} petals (${Math.round(confidence * 100)}% floral harmony) 🌸`;
+      message = `Gentle flower detected with ${peakCount} petals (${Math.round(confidence * 100)}% floral harmony) 🌸`;
     }
   } else {
-    if (radialFluctuation < 0.08) {
-      message = 'This looks like a simple circle or oval. Try adding curved petals radiating outwards! 🌸';
-    } else if (aspectRatio > 1.8 || aspectRatio < 0.55) {
-      message = 'The shape is quite linear. Cherry blossoms have balanced, round petal arrangements.';
+    if (avgValleyDepth < 0.14) {
+      message = 'This looks like a solid circle or round shape. Draw distinct petals with curved dips between them! 🌸';
+    } else if (peakCount < 4) {
+      message = `Detected ${peakCount || 0} lobe(s). A Sakura blossom needs 5 clear petals radiating from the center.`;
+    } else if (peakCount > 8) {
+      message = 'Too many jagged lines detected. Try drawing 5 smooth, rounded petals around the center.';
+    } else if (aspectRatio > 1.6 || aspectRatio < 0.62) {
+      message = 'The shape is quite elongated. Cherry blossoms have balanced, round petal arrangements.';
     } else {
-      message = 'The wind gently whispers: Add 5 clear petals and a soft center to guide the blossom to bloom.';
+      message = 'The wind gently whispers: Add 5 clear petals with indentations between them around a soft center.';
     }
   }
 
   return {
     isFlower,
     confidence: Number(confidence.toFixed(2)),
-    petalCount: peakCount >= 4 && peakCount <= 8 ? peakCount : bestK,
+    petalCount: peakCount >= 4 && peakCount <= 8 ? peakCount : (bestK >= 4 && bestK <= 8 ? bestK : 5),
     symmetryScore: Number(radialSymmetry.toFixed(2)),
     circularityScore: Number(aspectScore.toFixed(2)),
     message,
@@ -285,15 +401,15 @@ export function analyzeDrawing(canvas: HTMLCanvasElement): FlowerAnalysisResult 
       ? ['Ready to offer your blossom to the breeze! Click Release to watch it drift.']
       : [
           'Sakura cherry blossoms have 5 rounded petals.',
-          'Draw the petals connected around a central stamen.',
-          'Use soft pink or crimson watercolor strokes.',
+          'Draw clear curved indentations (valleys) where petals meet.',
+          'Draw petals evenly all the way around the central stamen.',
         ],
     metrics: {
       radialSymmetry: Number(radialSymmetry.toFixed(2)),
       petalProminence: Number(harmonicScore.toFixed(2)),
       closedLoops: peakCount,
       aspectRatio: Number(aspectRatio.toFixed(2)),
-      fillRatio: Number(centerRatio.toFixed(2)),
+      fillRatio: Number(avgValleyDepth.toFixed(2)),
     },
   };
 }
@@ -346,4 +462,3 @@ export function extractFlowerArtwork(canvas: HTMLCanvasElement): string | null {
   trimCtx.drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
   return trimCanvas.toDataURL('image/png');
 }
-

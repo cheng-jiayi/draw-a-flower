@@ -67,14 +67,13 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
         />
       </div>
 
-      {/* Top Bar Navigation (clean back button only) */}
-      <div className="absolute top-4 left-6 z-30">
+      {/* Top Left: Back to Windchime Veranda */}
+      <div className="fixed top-5 left-5 z-50">
         <button
           onClick={onBackToLanding}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200/80 shadow-xs text-stone-600 hover:text-stone-900 text-xs font-serif tracking-wider transition-all duration-200 hover:bg-white active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm border border-stone-200/80 shadow-sm text-stone-600 hover:text-stone-900 text-xs font-serif transition-all hover:scale-105 active:scale-95"
         >
-          <span className="text-sm">←</span>
-          <span>Windchime Veranda</span>
+          <span>🎐 Windchime Veranda</span>
         </button>
       </div>
 
@@ -83,7 +82,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
 
         {/* Left Side: 3x3 Wagashi Grid (Even bigger wagashi, clean without captions) */}
         <div className="w-full md:w-[56%] max-w-[840px] flex items-center justify-center">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 lg:gap-7 w-full p-2">
+          <div className="grid grid-cols-3 gap-0 w-full p-0">
             {WAGASHI_LIST.map((item) => {
               const isHovered = hoveredId === item.id;
               return (
@@ -134,8 +133,8 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
               onClick={handleTeapotClick}
               disabled={isPouring}
               className={`group relative cursor-pointer outline-none focus:outline-none transition-transform duration-500 ${isPouring
-                  ? '-rotate-[26deg] translate-x-[-35px] translate-y-[22px]'
-                  : 'hover:scale-105 active:scale-95'
+                ? '-rotate-[26deg] translate-x-[-35px] translate-y-[22px]'
+                : 'hover:scale-105 active:scale-95'
                 }`}
               title="Click to pour tea and enter the Sakura garden"
             >

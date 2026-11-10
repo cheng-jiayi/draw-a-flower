@@ -209,43 +209,43 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
         <div className="absolute inset-0 bg-stone-900/10 backdrop-blur-[1px]" />
       </div>
 
-      {/* Top Header */}
-      <div className="relative z-10 w-full max-w-4xl flex items-center justify-between mb-4">
+      {/* Top Left: Back to Wagashi & Tea */}
+      <div className="fixed top-5 left-5 z-50">
         <button
-          onClick={onBackToTeaRoom}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm border border-stone-300/80 shadow-xs text-stone-700 text-xs font-serif transition-all"
+          onClick={() => {
+            sounds.playSoftClick();
+            onBackToTeaRoom();
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-md border border-stone-200/90 shadow-sm hover:shadow-md text-stone-700 hover:text-stone-950 text-xs font-serif transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
         >
-          <span>← Return to Tea Room</span>
+          <span>🍵 Wagashi &amp; Tea</span>
         </button>
+      </div>
 
-        <div className="text-center">
-          <h2 className="text-base md:text-xl font-serif text-stone-800 tracking-wide font-medium">
-            Sakura Drawing Sanctuary · 桜を描く
-          </h2>
-          <p className="text-[11px] font-serif text-stone-600 italic">
-            Draw your cherry blossom flower. The AI will sense its petals and release it into the wind.
-          </p>
-        </div>
-
+      {/* Top Right: Show Guide Toggle */}
+      <div className="fixed top-5 right-5 z-50">
         <button
-          onClick={() => setShowGuide(!showGuide)}
-          className={`px-3 py-1.5 rounded-full text-xs font-serif border shadow-xs transition-all ${
-            showGuide
-              ? 'bg-pink-600 text-white border-pink-700'
-              : 'bg-white/80 text-stone-600 border-stone-300 hover:bg-white'
-          }`}
+          onClick={() => {
+            sounds.playSoftClick();
+            setShowGuide(!showGuide);
+          }}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-serif border shadow-sm hover:shadow-md transition-all transform hover:scale-105 active:scale-95 cursor-pointer ${showGuide
+            ? 'bg-pink-700 text-white border-pink-800 font-medium'
+            : 'bg-white/90 text-stone-700 border-stone-200/90 hover:bg-white hover:text-stone-950'
+            }`}
         >
-          {showGuide ? 'Hide Outline' : '🌸 Show Guide'}
+          <span>🌸</span>
+          <span>{showGuide ? 'Hide Outline' : 'Show Guide'}</span>
         </button>
       </div>
 
       {/* Main Workspace (Canvas + Tools + AI Feedback) */}
-      <div className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-6">
-        
+      <div className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center justify-center gap-6 mt-12 md:mt-0">
+
         {/* Drawing Canvas Board */}
         <div className="relative flex flex-col items-center">
           <div className="relative w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] md:w-[480px] md:h-[480px] bg-stone-50/90 rounded-2xl shadow-xl border-4 border-amber-900/10 overflow-hidden flex items-center justify-center">
-            
+
             {/* Guide Sakura Silhouette (watermark) */}
             {showGuide && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 z-0">
@@ -292,15 +292,12 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
             >
               Clear Canvas
             </button>
-            <span className="text-[11px] text-stone-500 font-serif italic">
-              {history.length > 1 ? `${history.length - 1} strokes` : 'Blank canvas'}
-            </span>
           </div>
         </div>
 
         {/* Right Side: Brushes, Colors & AI Analysis Panel */}
         <div className="w-full lg:w-72 flex flex-col gap-4">
-          
+
           {/* Color Palette */}
           <div className="bg-white/85 backdrop-blur-sm p-4 rounded-xl border border-stone-200 shadow-sm">
             <span className="text-xs font-serif text-stone-700 font-semibold tracking-wider block mb-2">
@@ -316,11 +313,10 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
                       sounds.playSoftClick();
                       setCurrentColor(p.color);
                     }}
-                    className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
-                      isSelected
-                        ? 'border-pink-500 bg-pink-50 shadow-xs'
-                        : 'border-stone-200 hover:bg-stone-50'
-                    }`}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${isSelected
+                      ? 'border-pink-500 bg-pink-50 shadow-xs'
+                      : 'border-stone-200 hover:bg-stone-50'
+                      }`}
                   >
                     <div
                       className="w-4 h-4 rounded-full border border-black/10 shrink-0"
@@ -360,20 +356,18 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
 
           {/* AI/ML Flower Recognition Panel */}
           <div
-            className={`bg-white/90 backdrop-blur-sm p-4 rounded-xl border shadow-sm transition-all duration-300 ${
-              feedbackShake ? 'animate-bounce border-rose-400 bg-rose-50/70' : 'border-stone-200'
-            }`}
+            className={`bg-white/90 backdrop-blur-sm p-4 rounded-xl border shadow-sm transition-all duration-300 ${feedbackShake ? 'animate-bounce border-rose-400 bg-rose-50/70' : 'border-stone-200'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-serif font-semibold text-stone-800 tracking-wider">
                 AI Flower Classifier
               </span>
               <span
-                className={`text-[10px] font-serif px-2 py-0.5 rounded-full ${
-                  analysis?.isFlower
-                    ? 'bg-emerald-100 text-emerald-800 font-semibold'
-                    : 'bg-amber-100 text-amber-800'
-                }`}
+                className={`text-[10px] font-serif px-2 py-0.5 rounded-full ${analysis?.isFlower
+                  ? 'bg-emerald-100 text-emerald-800 font-semibold'
+                  : 'bg-amber-100 text-amber-800'
+                  }`}
               >
                 {analysis?.isFlower ? '🌸 Flower Confirmed' : 'Waiting for Flower'}
               </span>
@@ -382,9 +376,8 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
             {/* AI Confidence Meter */}
             <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden mb-2">
               <div
-                className={`h-full transition-all duration-500 rounded-full ${
-                  analysis?.isFlower ? 'bg-pink-500' : 'bg-amber-400'
-                }`}
+                className={`h-full transition-all duration-500 rounded-full ${analysis?.isFlower ? 'bg-pink-500' : 'bg-amber-400'
+                  }`}
                 style={{ width: `${Math.round((analysis?.confidence || 0) * 100)}%` }}
               />
             </div>
@@ -417,18 +410,17 @@ export const SakuraDrawingCanvas: React.FC<SakuraDrawingCanvasProps> = ({
             <button
               onClick={handleVerifyAndRelease}
               disabled={isAnalyzing}
-              className={`w-full mt-3 py-2.5 px-4 rounded-xl text-xs font-serif tracking-wider shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 ${
-                analysis?.isFlower
-                  ? 'bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium hover:shadow-lg hover:scale-102'
-                  : 'bg-stone-800 hover:bg-stone-900 text-white'
-              }`}
+              className={`w-full mt-3 py-3 px-4 rounded-xl text-xs font-serif tracking-wider shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 text-white font-semibold ${isAnalyzing
+                ? 'bg-stone-500 opacity-80 cursor-wait'
+                : 'bg-pink-500 hover:bg-pink-600'
+                }`}
             >
               {isAnalyzing ? (
                 <span>AI Analyzing Blossom...</span>
               ) : analysis?.isFlower ? (
-                <span>🍃 Release to the Wind</span>
+                <span className="drop-shadow-xs">🍃 Release to the Wind</span>
               ) : (
-                <span>Verify &amp; Release Blossom</span>
+                <span className="drop-shadow-xs">Verify &amp; Release Blossom</span>
               )}
             </button>
           </div>

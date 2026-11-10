@@ -187,6 +187,48 @@ class SoundEngine {
     osc.stop(now + 0.07);
   }
 
+  // Crisp paper rustle / photo sliding sound
+  public playPaperRustle(intensity: number = 1.0) {
+    if (this.isMuted) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const duration = 0.22;
+    const bufferSize = Math.floor(ctx.sampleRate * duration);
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      // High-frequency friction noise for paper fiber texture
+      output[i] = (Math.random() * 2 - 1) * 0.35;
+    }
+
+    const whiteNoise = ctx.createBufferSource();
+    whiteNoise.buffer = noiseBuffer;
+
+    // Bandpass filter sweeping through paper frequency range (1200Hz - 2800Hz)
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1300, now);
+    filter.frequency.linearRampToValueAtTime(2600, now + duration * 0.4);
+    filter.frequency.linearRampToValueAtTime(1500, now + duration);
+    filter.Q.setValueAtTime(1.8, now);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.22 * intensity, now + 0.025);
+    gain.gain.linearRampToValueAtTime(0.14 * intensity, now + duration * 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    whiteNoise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    whiteNoise.start(now);
+    whiteNoise.stop(now + duration);
+  }
+
   // Camera shutter for polaroids
   public playShutter() {
     if (this.isMuted) return;
