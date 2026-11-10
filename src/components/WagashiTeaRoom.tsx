@@ -44,9 +44,9 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden select-none flex flex-col justify-center items-center">
+    <div className="relative w-full h-full min-h-screen overflow-y-auto overflow-x-hidden md:overflow-hidden select-none flex flex-col justify-start md:justify-center items-center">
       {/* Background Checkered Tablecloth (matching 2.png) */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/assets/background-2.png"
           alt="Checkered Tablecloth Background"
@@ -57,7 +57,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
       </div>
 
       {/* Pink Table Runner (matching 2.png) */}
-      <div className="absolute inset-x-0 top-[10%] bottom-[10%] z-0 pointer-events-none opacity-95">
+      <div className="fixed inset-x-0 top-[10%] bottom-[10%] z-0 pointer-events-none opacity-95">
         <Image
           src="/assets/background-2-runner.png"
           alt="Pink Table Runner"
@@ -78,7 +78,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
       </div>
 
       {/* Main Content Area (Layout matching 2.png) */}
-      <div className="relative z-10 w-full max-w-[1500px] h-full flex flex-col md:flex-row items-center justify-between px-4 sm:px-8 md:px-12 py-8">
+      <div className="relative z-10 w-full max-w-[1500px] min-h-full flex flex-col md:flex-row items-center justify-between px-4 sm:px-8 md:px-12 pt-20 pb-20 md:py-8">
 
         {/* Left Side: 3x3 Wagashi Grid (Even bigger wagashi, clean without captions) */}
         <div className="w-full md:w-[56%] max-w-[840px] flex items-center justify-center">
@@ -97,7 +97,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
                 >
                   <button
                     onClick={() => handleWagashiClick(item)}
-                    className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-56 xl:h-56 flex items-center justify-center p-1 rounded-2xl transition-all duration-300 transform group-hover:scale-110 active:scale-95 cursor-pointer outline-none focus:outline-none"
+                    className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-52 lg:h-52 xl:w-56 xl:h-56 flex items-center justify-center p-1 rounded-2xl transition-all duration-300 transform group-hover:scale-110 active:scale-95 cursor-pointer outline-none focus:outline-none"
                     aria-label={item.name}
                   >
                     {/* Soft halo on hover */}
@@ -125,10 +125,10 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
         </div>
 
         {/* Right Side: Teapot & Teacup */}
-        <div className="w-full md:w-[44%] h-[460px] md:h-[580px] lg:h-[660px] relative flex items-center justify-center overflow-visible">
+        <div className="w-full md:w-[44%] h-[420px] sm:h-[480px] md:h-[580px] lg:h-[660px] relative flex items-center justify-center overflow-visible mt-6 md:mt-0">
 
           {/* Teapot (Upper Right, placed to the right edge) */}
-          <div className="absolute top-1 right-[-10px] md:top-2 md:right-[-30px] lg:top-4 lg:right-[-40px] xl:right-[-50px] z-20">
+          <div className="absolute top-1 right-1 sm:right-2 md:top-2 md:right-[-30px] lg:top-4 lg:right-[-40px] xl:right-[-50px] z-20">
             <button
               onClick={handleTeapotClick}
               disabled={isPouring}
@@ -141,7 +141,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
               {/* Glow when ready */}
               <div className="absolute inset-4 rounded-full bg-emerald-200/40 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="relative w-68 h-68 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] lg:w-[470px] lg:h-[470px] xl:w-[520px] xl:h-[520px]">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] lg:w-[470px] lg:h-[470px] xl:w-[520px] xl:h-[520px]">
                 <Image
                   src="/assets/drawn-japanese-teapot.png"
                   alt="Japanese Teapot"
@@ -155,7 +155,7 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
             {/* Clean Pouring Stream (flowing into the teacup without glowing dots) */}
             {isPouring && (
               <div className="absolute top-[65%] left-[5%] w-3.5 h-48 z-30 pointer-events-none">
-                <div className="w-3 h-full bg-linear-to-b from-tea-600/90 via-emerald-500/90 to-tea-700/85 rounded-full blur-[0.4px] animate-pulse transform -rotate-[22deg] shadow-xs" />
+                <div className="w-3 h-full bg-gradient-to-b from-tea-600/90 via-emerald-500/90 to-tea-700/85 rounded-full blur-[0.4px] animate-pulse transform -rotate-[22deg] shadow-xs" />
               </div>
             )}
           </div>
