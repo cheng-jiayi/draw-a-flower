@@ -90,9 +90,9 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden select-none bg-sky-50 flex flex-col justify-center items-center">
+    <div className="relative w-full min-h-screen overflow-y-auto overflow-x-hidden md:h-screen md:overflow-hidden select-none bg-sky-50 flex flex-col justify-center items-center py-16 md:py-0">
       {/* Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/assets/background-3.png"
           alt=""
@@ -217,7 +217,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
 
       {/* Counter dots */}
       {total > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur-sm border border-pink-100/60 shadow-xs">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur-sm border border-pink-100/60 shadow-xs">
           {photos.map((_, i) => (
             <button
               key={i}

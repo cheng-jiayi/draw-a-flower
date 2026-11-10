@@ -36,7 +36,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative w-full h-screen overflow-hidden">
+    <main className="relative w-full h-screen overflow-y-auto overflow-x-hidden md:overflow-hidden">
       {/* Sound Mute / Unmute Toggle Button */}
       <button
         onClick={toggleMute}

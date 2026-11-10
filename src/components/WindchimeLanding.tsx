@@ -41,9 +41,9 @@ export const WindchimeLanding: React.FC<WindchimeLandingProps> = ({ onEnter }) =
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden select-none bg-sky-100 flex items-center justify-center">
+    <div className="relative w-full min-h-screen overflow-y-auto overflow-x-hidden md:h-screen md:overflow-hidden select-none bg-sky-100 flex items-center justify-center">
       {/* Background watercolor sky (matching 1.png) */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/assets/background-1.png"
           alt="Watercolor Sky Background"

@@ -188,10 +188,10 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
   return (
     <div
       onClick={handleStirWind}
-      className="relative w-full h-screen overflow-hidden select-none bg-sky-50 flex flex-col justify-between"
+      className="relative w-full min-h-screen overflow-y-auto overflow-x-hidden md:h-screen md:overflow-hidden select-none bg-sky-50 flex flex-col justify-between pt-20 pb-20 md:py-6"
     >
       {/* Background Watercolor Sky */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/assets/background-3.png"
           alt="Watercolor Sky Landscape"
@@ -205,7 +205,7 @@ export const BlossomWindGarden: React.FC<BlossomWindGardenProps> = ({
       {/* Physics Falling Canvas */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="fixed inset-0 z-10 pointer-events-none"
       />
 
       {/* Top Left: Back to Wagashi & Tea */}
