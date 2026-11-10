@@ -151,13 +151,6 @@ export const WagashiTeaRoom: React.FC<WagashiTeaRoomProps> = ({
                 />
               </div>
             </button>
-
-            {/* Clean Pouring Stream (flowing into the teacup without glowing dots) */}
-            {isPouring && (
-              <div className="absolute top-[65%] left-[5%] w-3.5 h-48 z-30 pointer-events-none">
-                <div className="w-3 h-full bg-gradient-to-b from-tea-600/90 via-emerald-500/90 to-tea-700/85 rounded-full blur-[0.4px] animate-pulse transform -rotate-[22deg] shadow-xs" />
-              </div>
-            )}
           </div>
 
           {/* Teacup (Lower Left relative to Teapot, fills up smoothly without altering the cup rim or outer shadow) */}
