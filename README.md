@@ -1,4 +1,4 @@
-# Draw a Flower · Whisper of the Heart (風鈴と桜)
+# Draw a Flower
 
 An interactive, poetic web experience created for Vercel deployment, featuring traditional Japanese watercolor aesthetics, audio acoustics, and AI-powered flower sketch recognition.
 
@@ -110,10 +110,3 @@ The final blossom wind garden features an interactive 2D canvas particle system 
 The polaroid journal utilizes a custom track-based carousel built for silky smooth interactions:
 * **5-Slot Virtual Sliding Window**: Pre-renders neighboring polaroid slots using circular modulo indexing `(index % total)`, supporting an arbitrary number of photos per day with infinite looping.
 * **Snap-Back Translation**: Employs hardware-accelerated CSS transforms (`translateX`) during swipe/click animations, seamlessly resetting translation offsets without animation upon `transitionEnd` for infinite, glitch-free swiping.
-
----
-
-### 7. Responsive Viewport-Locked & Adaptive Layouts
-* **Desktop**: Locked to `100vh` viewport height with standardized fixed navigation controls (`fixed top-5 left-5 / right-5`) for an immersive gallery experience.
-* **Mobile Adaptation**: Gracefully transitions to `overflow-y-auto` with calculated top and bottom padding (`pt-20 pb-20`), ensuring canvas controls, wagashi grids, and polaroid cards remain fully accessible without clipping on screens of any aspect ratio.
-```
