@@ -246,18 +246,18 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
           onClick={() => setLightboxPhoto(null)}
         >
           <div
-            className="bg-white p-4 md:p-6 pb-8 rounded-sm shadow-2xl max-w-lg w-full flex flex-col items-center"
+            className="bg-white p-3.5 sm:p-4 md:p-5 pb-6 rounded-xs shadow-2xl w-[90vw] max-w-[320px] md:max-w-[350px] max-h-[88vh] overflow-y-auto flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative w-full aspect-[4/5] rounded-xs overflow-hidden bg-stone-100">
               <Image src={lightboxPhoto.imageUrl} alt={lightboxPhoto.title} fill className="object-cover" />
             </div>
-            <div className="mt-4 text-center w-full px-2">
-              <h3 className="font-serif text-lg text-stone-800 font-medium leading-snug">
+            <div className="mt-3.5 text-center w-full px-2">
+              <h3 className="font-serif text-base text-stone-800 font-medium leading-snug">
                 {lightboxPhoto.title}
               </h3>
               {lightboxPhoto.caption && (
-                <p className="text-xs font-serif text-stone-600 mt-2 leading-relaxed">
+                <p className="text-xs font-serif text-stone-600 mt-1.5 leading-relaxed">
                   {lightboxPhoto.caption}
                 </p>
               )}
@@ -269,7 +269,7 @@ export const PolaroidJournal: React.FC<PolaroidJournalProps> = ({
             </div>
             <button
               onClick={() => setLightboxPhoto(null)}
-              className="mt-5 px-6 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-serif transition-colors"
+              className="mt-4 px-5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-serif transition-colors cursor-pointer"
             >
               Close
             </button>
